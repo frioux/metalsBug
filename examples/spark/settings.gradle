@@ -1,0 +1,3 @@
+rootProject.name = 'spark_example'
+
+includeBuild "${gradle.repoRootDir}/common/scala/config"

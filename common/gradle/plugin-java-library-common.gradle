@@ -1,0 +1,11 @@
+/*
+ * Common Java library configuration.
+ */
+
+apply from: "${gradle.repoRootDir}/common/gradle/plugin-java-common.gradle"
+apply plugin: 'java-library'
+
+// set default group
+group = 'com.ziprecruiter'
+
+

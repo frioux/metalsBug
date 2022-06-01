@@ -1,0 +1,23 @@
+/*
+ * Common Scala configuration.
+ */
+
+apply plugin: 'scala'
+apply plugin: 'java-library'
+
+group = 'com.ziprecruiter'
+
+ext {
+	scalaMajor = '2.11'
+	scalaMinor = '8'
+}
+
+compileScala {
+    scalaCompileOptions.additionalParameters = ["-target:jvm-1.8", "-unchecked", "-deprecation", "-feature", "-encoding", "utf8"]
+    scalaCompileOptions.additionalParameters.remove("-Xfatal-warnings")
+}
+
+compileTestScala {
+    scalaCompileOptions.additionalParameters = ["-target:jvm-1.8", "-unchecked", "-deprecation", "-feature", "-encoding", "utf8"]
+    scalaCompileOptions.additionalParameters.remove("-Xfatal-warnings")
+}

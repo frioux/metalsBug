@@ -1,0 +1,41 @@
+apply plugin: 'application'
+
+apply from: "${gradle.repoRootDir}/common/gradle/plugin-scala-library-common.gradle"
+apply from: "${projectDir}/gradle/dependencies.gradle"
+
+dependencies {
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:29.0-jre'
+
+    // Use Scalatest for testing our library
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.scalatestplus:junit-4-12_2.13:3.2.0.0'
+
+    // Need scala-xml at test runtime
+    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
+}
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'ch.epfl.scala:gradle-bloop_2.12:1.5.0'
+    }
+}
+
+allprojects {
+  apply plugin: 'bloop'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'spark_example.App'
+}
+
+repositories {
+    google()
+    jcenter()
+}

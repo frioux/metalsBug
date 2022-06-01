@@ -1,0 +1,4 @@
+apply from: "${gradle.repoRootDir}/common/gradle/plugin-scala-2.12-library-common.gradle"
+apply from: "${projectDir}/gradle/dependencies.gradle"
+
+group 'com.ziprecruiter'

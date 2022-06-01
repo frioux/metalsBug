@@ -1,0 +1,80 @@
+// Adding known conflicting capabilities and common resolutions
+
+dependencies {
+    // Activate the "LoggingCapability" rule
+    components.all(LoggingCapability)
+}
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import groovy.transform.CompileStatic
+
+@CompileStatic
+class LoggingCapability implements ComponentMetadataRule {
+    final static Logger logger = LoggerFactory.getLogger(LoggingCapability.class)
+
+    final static Set<String> LOG4J1_LOGGING_MODULES = [
+        // log4j 1.x API implemented by log4j 2.x
+        "org.apache.logging.log4j:log4j-1.2-api",
+
+        // log4j 1.x API implemented by log4j 1.x
+        "log4j:log4j",
+
+        // log4j 1.x API implemented by slf4j
+        "org.slf4j:log4j-over-slf4j"
+
+        ] as Set<String>
+
+    final static Set<String> SLF4J_LOGGING_MODULES = [
+        // slf4j API implemented by log4j 2.x
+        "org.apache.logging.log4j:log4j-slf4j-impl",
+
+        // slf4j API implemented by log4j 1.x
+        "org.slf4j:slf4j-log4j12"
+
+        ] as Set<String>
+
+    void execute(ComponentMetadataContext context) {
+        context.details.with {
+            if (LOG4J1_LOGGING_MODULES.contains(id.group + ':' + id.name)) {
+                allVariants {
+                    it.withCapabilities {
+                        logger.info("Adding log4j1 capability to {}", id)
+                        it.addCapability("capabilities", "log4j1", id.group + ':' + id.name + ':' + id.version)
+                    }
+                }
+            }
+
+            if (SLF4J_LOGGING_MODULES.contains(id.group + ':' + id.name)) {
+                allVariants {
+                    it.withCapabilities {
+                        logger.info("Adding slf4j capability to {}", id)
+                        it.addCapability("capabilities", "slf4j", id.group + ':' + id.name + ':' + id.version)
+                    }
+                }
+            }
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.capabilitiesResolution.withCapability("capabilities:log4j1") {
+        def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module == 'log4j-1.2-api' }
+        logger.info("Selecting log4j1 capability {}", toBeSelected)
+        if (toBeSelected != null) {
+            select(toBeSelected)
+        }
+        because 'use log4j-1.2-api in place of other log4j1 implementations because our common/java/logger can work with it'
+    }
+
+    resolutionStrategy.capabilitiesResolution.withCapability("capabilities:slf4j") {
+        def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module == 'log4j-slf4j-impl' }
+        logger.info("Selecting slf4j capability {}", toBeSelected)
+        if (toBeSelected != null) {
+            select(toBeSelected)
+        }
+        because 'use log4j-slf4j-impl to provide slf4j implementation because our common/java/logger depends on it'
+    }
+}
+

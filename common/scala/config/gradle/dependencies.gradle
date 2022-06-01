@@ -1,0 +1,31 @@
+ext {
+    junitVersion = '4.12'
+    scalatestVersion = '3.0.3'
+    versionScalatestplus = '3.2.2.0'
+    scalaJVersion = '2.4.2'
+//    jacksonVersion = '2.12.0'
+    mockitoVersion = '1.10.19'
+    versionJunit = '4.12'
+    versionScalatest = '3.0.3'
+    json4sVersion = '3.6.10'
+    profigVersion = '2.3.5'
+}
+
+dependencies {
+    implementation(
+            [group: 'org.json4s', name: "json4s-jackson_$scalaMajor", version: "$json4sVersion"],
+            [group: 'org.json4s', name: "json4s-core_$scalaMajor", version: "$json4sVersion"],
+            [group:'com.outr',name:"profig_$scalaMajor",version:"$profigVersion"],
+    )
+    compileOnly(
+            [group: 'org.scala-lang', name: 'scala-compiler', version: "$scalaMajor.$scalaMinor"],
+            [group: 'org.scala-lang', name: 'scala-library', version: "$scalaMajor.$scalaMinor"],
+
+//            [group: 'com.fasterxml.jackson.module', name: "jackson-module-scala_$scalaMajor", version: "$jacksonVersion"],
+//            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jacksonVersion"],
+    )
+    testImplementation(
+            [group: 'org.scalatest', name: "scalatest_$scalaMajor", version: "${versionScalatest}"],
+            [group: 'junit', name: 'junit', version: "${versionJunit}"],
+    )
+}

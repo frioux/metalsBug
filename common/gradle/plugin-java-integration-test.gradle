@@ -1,0 +1,96 @@
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+// configuration data for integration tests
+class IntegrationTestConfigExtension {
+    String dirName
+    String classifier
+    boolean createArtifact
+}
+
+// plugin to configure integration test tasks
+class IntegrationTestPlugin implements Plugin<Project> {
+
+    void apply(Project project) {
+        project.extensions.create('integrationTestConfig', IntegrationTestConfigExtension)
+        createSourceSet(project)
+        createConfigurations(project)
+        createIdeaConfiguration(project)
+        createIntegrationTestTask(project)
+        // IntegrationTestConfigExtension is already evaluated inside afterEvaluate closure
+        project.afterEvaluate { p ->
+            def dirName = p.integrationTestConfig.dirName ?: 'integrationtest'
+            p.sourceSets.integrationTest {
+                java.srcDirs = [ "src/${dirName}/java" ]
+                resources.srcDirs = [ "src/${dirName}/resources" ]
+            }
+            createIntegrationTestJarTask(p)
+            if (p.integrationTestConfig.createArtifact) {
+                p.tasks.integrationTest.dependsOn p.tasks.integrationTestJar
+                p.tasks.integrationTestJar.enabled = true
+            }
+        }
+    }
+
+    private void createSourceSet(Project project) {
+        def dirName = project.integrationTestConfig.dirName ?: 'integrationtest'
+        project.sourceSets.create('integrationTest')
+        project.sourceSets.integrationTest {
+            compileClasspath += project.sourceSets.main.output + project.sourceSets.test.output
+            runtimeClasspath += project.sourceSets.main.output + project.sourceSets.test.output
+        }
+    }
+
+    private void createConfigurations(Project project) {
+        project.configurations {
+            integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+            integrationTestImplementation.extendsFrom testImplementation
+            integrationTestCompileOnly {
+                extendsFrom testCompileOnly
+                canBeResolved = true
+                canBeConsumed = true
+            }
+            integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+        }
+    }
+
+    private void createIdeaConfiguration(Project project) {
+        /*
+        project.idea.module {
+            testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+            testResourceDirs += project.sourceSets.integrationTest.resources.srcDirs
+            scopes.TEST.plus += [ project.configurations.integrationTestRuntimeClasspath ]
+            scopes.PROVIDED.plus += [ project.configurations.annotationProcessor ]
+        }
+        */
+    }
+
+    private void createIntegrationTestTask(Project project) {
+       project.tasks.register('integrationTest', Test) {
+            description = 'Runs the integration tests.'
+            group = 'verification'
+            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+            classpath = project.sourceSets.integrationTest.runtimeClasspath
+            outputs.upToDateWhen { false }
+            mustRunAfter 'test'
+        }
+    }
+
+    private void createIntegrationTestJarTask(Project project) {
+         project.tasks.register('integrationTestJar', Jar) {
+            description = 'Creates a jar of integration tests.'
+            group 'build'
+            from project.sourceSets.integrationTest.output
+            shouldRunAfter 'integrationTest'
+            archiveClassifier = project.integrationTestConfig.classifier ?: 'integrationtest'
+            enabled = false
+        }
+    }
+
+}
+
+apply plugin: IntegrationTestPlugin
+
+
+

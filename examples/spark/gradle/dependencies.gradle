@@ -1,0 +1,7 @@
+dependencies {
+    compileOnly(
+            [group: 'org.scala-lang', name: 'scala-compiler',version: "2.12.15"],
+            [group: 'org.scala-lang', name: 'scala-library', version: "2.12.15"],
+    )
+    implementation "com.ziprecruiter:zr-config"
+}

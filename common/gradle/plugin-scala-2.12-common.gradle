@@ -1,0 +1,53 @@
+apply from: "${buildscript.sourceFile.parent}/plugin-java-common.gradle"
+apply plugin: 'scala'
+
+ext {
+    scalaMajor =    '2.12'
+    scalaMinor =    '10'
+}
+
+// required dependencies
+dependencies {
+    implementation "org.scala-lang:scala-library:${scalaMajor}.${scalaMinor}"
+}
+
+// compiler configuration
+project.tasks.withType(ScalaCompile).configureEach { s ->
+    s.scalaCompileOptions.forkOptions.jvmArgs = ['-Xss8m']
+    s.scalaCompileOptions.additionalParameters = [
+            "-target:jvm-1.8",
+            "-unchecked",
+            "-deprecation",
+            "-feature",
+            "-explaintypes",
+            "-encoding", "utf8",
+            "-Xlint:adapted-args",
+            "-Xlint:nullary-unit",
+            "-Xlint:inaccessible",
+            "-Xlint:infer-any",
+            "-Xlint:doc-detached",
+            "-Xlint:private-shadow",
+            "-Xlint:type-parameter-shadow",
+            "-Xlint:poly-implicit-overload",
+            "-Xlint:option-implicit",
+            "-Xlint:delayedinit-select",
+            "-Xlint:package-object-classes",
+            "-Xlint:stars-align",
+            "-Ywarn-inaccessible",
+            "-Ywarn-unused:implicits",
+            "-Ywarn-unused:imports",
+            "-Ywarn-unused:locals",
+            "-Ywarn-unused:params",
+            "-Ywarn-unused:patvars",
+            "-Ywarn-unused:privates"
+    ]
+}
+
+// ScalaDoc configuration
+project.tasks.withType(ScalaDoc).configureEach { scaladoc ->
+    scaladoc.title = "ZipRecruiter ${project.name}"
+    scaladoc.scalaDocOptions.setWindowTitle("ZipRecruiter ${project.name}")
+    scaladoc.scalaDocOptions.setHeader("ZipRecruiter ${project.name}")
+    scaladoc.scalaDocOptions.setFooter("Proprietary source code")
+}
+

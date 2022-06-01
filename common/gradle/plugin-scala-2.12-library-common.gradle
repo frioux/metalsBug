@@ -1,0 +1,2 @@
+apply from: "${buildscript.sourceFile.parent}/plugin-java-library-common.gradle"
+apply from: "${buildscript.sourceFile.parent}/plugin-scala-2.12-common.gradle"

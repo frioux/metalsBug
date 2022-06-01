@@ -1,0 +1,63 @@
+/*
+ * Common Java configuration.  This assumes that the initialization has
+ * already configured repositories.  This plugin will:
+ *
+ * - Establish Java 8 as the source and target Java version.
+ * - Default source encodings to UTF-8.
+ * - Turn on all internal linters in the Java compiler.
+ * - Add the Git hash and branch name to the jar file's manifest.
+ * - Configure dependency management to fail on conflict, and prefer local
+ *   project modules to external dependencies.
+ * - Configure Gradle cache "changing modules" for a short amount of time.
+ */
+
+import org.gradle.external.javadoc.MinimalJavadocOptions
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+
+apply plugin: 'java'
+apply from: "${gradle.repoRootDir}/common/gradle/plugin-java-capabilities.gradle"
+apply from: "${gradle.repoRootDir}/common/gradle/plugin-java-integration-test.gradle"
+
+// set default group
+group = 'com.ziprecruiter'
+
+// Java compiler configuration
+ext.jdkVersion = 1.8
+sourceCompatibility = ext.jdkVersion
+targetCompatibility = ext.jdkVersion
+project.tasks.withType(JavaCompile).configureEach { javaCompile ->
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:all', '-Xlint:-processing'])
+}
+    
+// common dependency strategies
+configurations.all {
+	resolutionStrategy {
+		failOnVersionConflict()
+        preferProjectModules()
+        cacheChangingModulesFor 30, 'minutes'
+    }
+}
+
+// reproducible jar parameters
+project.tasks.withType(AbstractArchiveTask).configureEach { arc ->
+    arc.preserveFileTimestamps = false
+    arc.reproducibleFileOrder = true
+}
+
+// Javadoc configuration
+def javadocTasks = project.tasks.withType(Javadoc)
+// documentation.finalizedBy(javadocTasks)
+javadocTasks.configureEach { javadoc ->
+    MinimalJavadocOptions options = javadoc.options
+    options.setEncoding("UTF-8")
+    options.setWindowTitle("ZipRecruiter ${project.name}")
+    options.setHeader("ZipRecruiter ${project.name}")
+    options.setFooter("Proprietary source code")
+    options.showFromProtected()
+    if (options instanceof StandardJavadocDocletOptions) {
+        StandardJavadocDocletOptions sopts = (StandardJavadocDocletOptions) options;
+        sopts.use(true)
+        sopts.linkSource(true)
+    }
+}

@@ -1,0 +1,34 @@
+/*
+ * Top-level tasks for support for global builds.  This registers three new
+ * tasks:
+ *
+ *   - cleanAll:        This performs a "clean" operation for all sub-projects
+ *                      and all included builds -- that is, projects referenced
+ *                      via the "include" or "includeBuild" directives.  This
+ *                      is the normal behavior for sub-projects, but is a
+ *                      special case for included builds.
+ *   - buildAll:        This performs a "build" operation for all sub-projects
+ *                      and all included builds -- that is, projects referenced
+ *                      via the "include" or "includeBuild" directives.  This
+ *                      is the normal behavior for sub-projects.  However, it
+ *                      is a special case for included builds where a "build"
+ *                      operation in a top-level project normally causes an
+ *                      "assemble" operation in the included build, which will
+ *                      involve compiling classes but not running any unit tests.
+ *   - integrationTest: This performs an "integrationTest" operation for all sub-
+ *                      projects and included builds.
+ */
+
+["clean", "build", "integrationTest"].each { taskName ->
+    project.tasks.register("${taskName}All") { task ->
+        if (project.tasks.findByPath("${taskName}") != null) {
+            dependsOn project.tasks.getByName("${taskName}")
+        }
+        project.childProjects.each { name, child -> 
+            dependsOn child.tasks.getByName("${taskName}")
+        }
+        gradle.includedBuilds.each { build ->
+            dependsOn build.task(":${taskName}All")
+        }
+    }
+}

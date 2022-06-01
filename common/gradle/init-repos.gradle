@@ -1,0 +1,30 @@
+File getRootDir(File buildScriptSourceFile) {
+    String REPO_KEY = 'STARTERVIEW'
+    String REPO_INIT_REPOS_SCRIPT_LOCATION = "common/gradle/init-repos.gradle"
+
+    String dir = System.getenv(REPO_KEY)
+    if (dir == null) {
+        dir = System.getProperty(REPO_KEY)
+    }
+
+    if (dir != null) {
+        return new File(dir).canonicalFile
+    }
+
+    String canonicalPath = buildScriptSourceFile.canonicalPath
+    if (canonicalPath.endsWith("/" + REPO_INIT_REPOS_SCRIPT_LOCATION)) {
+        return new File(canonicalPath).getParentFile().getParentFile().getParentFile();
+    }
+
+    throw new RuntimeException("Cannot get the repo root, make sure the symlink at " + buildScriptSourceFile + " points at [REPO ROOT]/" + REPO_INIT_REPOS_SCRIPT_LOCATION  + "\n" +
+        "otherwise set " + REPO_KEY + " env var to the location of repo root")
+}
+
+gradle.ext.repoRootDir = getRootDir(buildscript.getSourceFile())
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
